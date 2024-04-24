@@ -1,0 +1,80 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(readxl)
+
+# Specify the path to your Excel file
+file_path <- "C:/Users/ayush/OneDrive/Desktop/load.xlsx"
+
+# Load the Excel file into a data frame
+data <- read_excel(file_path)
+
+
+# Read the Excel file
+temperature_data <- read_excel('C:/Users/ayush/OneDrive/Documents/TSA_Sp24/Competition/temperature.xlsx')
+
+
+relative_humidity_data <- read_excel("C:/Users/ayush/OneDrive/Documents/TSA_Sp24/Competition/relative_humidity.xlsx")
+
+
+
+```
+
+```{r}
+data
+```
+
+```{r}
+data$h_combined <- rowMeans(data[, c("h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "h9", "h10", "h11", "h12", "h13", "h14", "h15", "h16", "h17", "h18", "h19", "h20", "h21", "h22", "h23", "h24")])
+
+# View the resulting data frame
+head(data)
+
+
+```
+
+```{r}
+library(forecast)
+
+data$date <- as.Date(data$date)
+
+# Create a time series object using 'h_combined' column
+ts_data <- ts(data$h_combined, start = min(data$date), end = max(data$date), frequency = 365)  
+
+auto_arima_model <- auto.arima(ts_data)
+
+# Print the summary of the automatically selected ARIMA model
+summary(auto_arima_model)
+
+```
+
+```{r}
+forecast_result <- forecast(auto_arima_model, h = 31)
+
+# Print the forecasted values
+print(forecast_result)
+
+```
+
+```{r}
+# Load the required library
+library(openxlsx)
+point_forecast <- forecast_result$mean
+
+# Specify the file path where you want to save the Excel file
+excel_file_path <- "forecast_results2.xlsx"
+
+# Write the data to an Excel file
+write.xlsx(point_forecast, excel_file_path, rowNames = FALSE)
+
+# Print confirmation message
+cat("Forecast data has been successfully saved to '", excel_file_path, "'", sep = "")
+
+
+
+```
+
+
